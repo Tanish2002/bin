@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # <Constants>
 cache_dir="$HOME/.cache/wallblur"

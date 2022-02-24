@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Control volume
 # Requires pulseaudio
 # AwesomeWM: Only sends a notification if the sidebar is not visible
