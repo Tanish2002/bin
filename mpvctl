@@ -1,7 +1,6 @@
 #!/bin/sh
 # control mpv through a socket with nc(openbsd-netcat).......(DONT USE GNU-netcat)#
 
-
 sock=${MPV_SOCKET:-/tmp/mpvsocket}
 
 usage() {
@@ -28,7 +27,7 @@ die() { >&2 printf '%s\n' "$*" ; exit 1 ; }
 
 isrunning() {
     [ -S "$sock" ] || die "$sock does not exist."
-    : | nc -U -N -- "$sock" 2>/dev/null || die "mpv is not playing on $sock"
+    : | pgrep -x mpv >/dev/null || die "mpv is not playing on $sock"
 }
 
 cmd() {
