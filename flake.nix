@@ -38,7 +38,7 @@
         postFixup = ''
           for file in scripts/*
           do
-            wrapProgram $out/bin/$file \
+            wrapProgram $out/bin/$(basename $file) \
               ---prefix PATH : ${
                 with pkgs;
                 lib.makeBinPath [
