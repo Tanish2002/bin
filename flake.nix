@@ -36,10 +36,10 @@
           cp * $out/bin/
         '';
         postFixup = ''
-          for file in scripts/*
+          for file in *
           do
             wrapProgram $out/bin/$(basename $file) \
-              ---prefix PATH : ${
+              --prefix PATH : ${
                 with pkgs;
                 lib.makeBinPath [
                   coreutils
