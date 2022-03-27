@@ -2,7 +2,7 @@
 # Opens A rofi menu with screenshot Options
 
 chosen=$(printf "fullscreen\narea\narea [clipboard]\nactive window" | rofi -dmenu -lines 4 -width 25 -p "screenshot" -i)
-
+echo $HOME > /tmp/test
 echo $chosen
 if [ $WAYLAND_DISPLAY ]; then
 	case $chosen in
