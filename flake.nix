@@ -25,18 +25,19 @@
     };
       stdenv.mkDerivation {
         name = "scripts";
-        src = ./scripts;
+        src = ./.;
 
         buildInputs = [ pkgs.makeWrapper ];
         installPhase = ''
-          substituteInPlace matrix_upload \
+          substituteInPlace scripts/matrix_upload \
           --replace '#!/usr/bin/env -S python3 -u' '${pkgs.python3} -u'        
 
           mkdir -p $out/bin
-          cp * $out/bin/
+          cp scripts/* $out/bin/
+          cp deps/* $out/bin
         '';
         postFixup = ''
-          for file in *
+          for file in scripts/*
           do
             wrapProgram $out/bin/$(basename $file) \
               --prefix PATH : ${
