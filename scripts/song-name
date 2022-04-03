@@ -7,26 +7,36 @@
 
 artist=$($HOME/bin/mpvctl -k artist)
 title=$($HOME/bin/mpvctl -k title)
+filename=$($HOME/bin/mpvctl -k filename)
+[ -f /tmp/playing ] && touch /tmp/playing && current=$(tail -n1 /tmp/playing)
 
 if [ "$artist" != null ] && [ "$title" != null ]; then
-	printf '%s - %s\n' "$artist" "$title"
+	playing=$(printf '%s - %s\n' "$artist" "$title")
+	# Check if it's already playing
+	[ "$current" = "$playing"] && exit
+	# Print it and store it in playing
+	[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
 else
-	res=$($HOME/bin/mpvctl -k filename)
+	res=$filename
 	case $res in
 	*'.'*)
 		# must be a local file
-		printf '%s\n' "$res"
+		playing=$(printf '%s\n' "$res")
+		# Check if it's already playing
+		[ "$current" = "$playing"] && exit
+		# Print it and store it in playing
+		[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
 		;;
 	watch?v*)
-		ytdl=$(youtube-dl -e "http://youtube.com/$res" 2>/dev/null)
+		# Get url
+		playing=$(youtube-dl -e "http://youtube.com/$res" 2>/dev/null)
+		# Check if it's already playing
+		[ "$current" = "$playing" ] && exit
+		# Print it and store it in playing
+		[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
+		# Send A nice notification with image
 		convert $(youtube-dl --get-thumbnail "https://www.youtube.com/$res") /tmp/image.png 2>/dev/null
-
-		[ "$ytdl" ] && printf '%s\n' "$ytdl"
-
-		[ -f /tmp/playing ] && touch /tmp/playing && var=$(tail -n1 /tmp/playing)
-
-		[ "$var" = "$res" ] || notify-send -i "/tmp/image.png" "${ytdl}"
-		echo "$res" >>/tmp/playing
+		notify-send -i "/tmp/image.png" "${playing}"
 		;;
 	esac
 fi

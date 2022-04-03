@@ -11,6 +11,7 @@ To use, add 'input-ipc-server=/tmp/mpvsocket' to your mpv.conf
 Options:
 ----------
 -t     toggle play/pause
+-i     return if running
 -n     skip to next in playlist
 -p     skip to prev in playlist
 -f     seek forward by 30 seconds
