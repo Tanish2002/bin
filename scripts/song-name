@@ -13,7 +13,7 @@ filename=$($HOME/bin/mpvctl -k filename)
 if [ "$artist" != null ] && [ "$title" != null ]; then
 	playing=$(printf '%s - %s\n' "$artist" "$title")
 	# Check if it's already playing
-	[ "$current" = "$playing"] && exit
+	[ "$current" = "$playing" ] && exit
 	# Print it and store it in playing
 	[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
 else
@@ -23,7 +23,7 @@ else
 		# must be a local file
 		playing=$(printf '%s\n' "$res")
 		# Check if it's already playing
-		[ "$current" = "$playing"] && exit
+		[ "$current" = "$playing" ] && exit
 		# Print it and store it in playing
 		[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
 		;;
