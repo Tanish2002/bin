@@ -1,9 +1,12 @@
 {
   description = "A flake for installing these scripts";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
+    unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+  };
 
-  outputs = { self, nixpkgs, ... }: {
+  outputs = { self, nixpkgs, unstable, ... }: {
 
     defaultPackage.x86_64-linux = with import nixpkgs {
       system = "x86_64-linux";
@@ -17,9 +20,6 @@
               sha256 = "lt8l387Kc3RGCTEcE+zIf0sXdLrmVVu3L6qhhSlEQ2Q=";
             };
           });
-          # Imagemagick package is kinda broken :(
-          imagemagick-patch = prev.imagemagick.overrideAttrs
-            (o: { nativeBuildInputs = o.nativeBuildInputs ++ [ prev.curl ]; });
         })
       ];
     };
@@ -60,7 +60,17 @@
                   file
                   maim
                   colorpicker-ym1234
-                  imagemagick-patch
+                  unstable.legacyPackages.x86_64-linux.imagemagick_light
+                  mediainfo
+                  lynx
+                  gawk
+                  bat
+                  atool
+                  unzip
+                  ffmpegthumbnailer
+                  poppler_utils
+                  odt2txt
+                  gnupg
                 ]
               }
           done
