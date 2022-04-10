@@ -63,6 +63,7 @@
                   unstable.legacyPackages.x86_64-linux.imagemagick_light
                   mediainfo
                   lynx
+                  ueberzug
                   gawk
                   bat
                   atool
