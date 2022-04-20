@@ -72,6 +72,8 @@
                   poppler_utils
                   odt2txt
                   gnupg
+                  bluez
+                  util-linux
                 ]
               }
           done
