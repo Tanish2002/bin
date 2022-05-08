@@ -4,9 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
     unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { self, nixpkgs, unstable, ... }: {
+  outputs = { self, nixpkgs, unstable, nur, ... }: {
 
     defaultPackage.x86_64-linux = with import nixpkgs {
       system = "x86_64-linux";
@@ -21,11 +22,12 @@
             };
           });
         })
+        nur.overlay
       ];
     };
       stdenv.mkDerivation {
         name = "scripts";
-        src = ./.;
+        src = self;
 
         buildInputs = [ pkgs.makeWrapper ];
         installPhase = ''
@@ -55,7 +57,7 @@
                   xdotool
                   cpufrequtils
                   timg
-                  rofi
+                  pkgs.nur.repos.kira-bruneau.rofi-wayland
                   jq
                   file
                   maim
