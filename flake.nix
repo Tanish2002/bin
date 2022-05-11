@@ -13,6 +13,7 @@
       system = "x86_64-linux";
       overlays = [
         (final: prev: {
+          unstable = unstable.legacyPackages.x86_64-linux;
           colorpicker-ym1234 = prev.colorpicker.overrideAttrs (o: {
             src = prev.fetchFromGitHub {
               owner = "ym1234";
@@ -47,7 +48,7 @@
                 lib.makeBinPath [
                   coreutils
                   curl
-                  youtube-dl
+                  pkgs.unstable.yt-dlp-light
                   mpv
                   netcat
                   procps
@@ -62,7 +63,7 @@
                   file
                   maim
                   colorpicker-ym1234
-                  unstable.legacyPackages.x86_64-linux.imagemagick_light
+                  pkgs.unstable.imagemagick_light
                   mediainfo
                   lynx
                   ueberzug
