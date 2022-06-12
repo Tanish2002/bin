@@ -1,40 +1,8 @@
-{ stdenvNoCC
-, python3
-, makeWrapper
-, lib
-, coreutils
-, curl
-, yt-dlp-light
-, mpv
-, netcat
-, procps
-, libnotify
-, slop
-, ffmpeg
-, xdotool
-, cpufrequtils
-, timg
-, rofi-wayland
-, jq
-, file
-, maim
-, colorpicker-ym1234
-, imagemagick_light
-, mediainfo
-, lynx
-, ueberzug
-, gawk
-, bat
-, atool
-, unzip
-, ffmpegthumbnailer
-, poppler_utils
-, odt2txt
-, gnupg
-, bluez
-, util-linux
-, self
-}:
+{ stdenvNoCC, python3, makeWrapper, lib, coreutils, curl, yt-dlp-light, mpv
+, netcat, procps, libnotify, slop, ffmpeg, xdotool, cpufrequtils, timg, rofi, jq
+, file, maim, colorpicker-ym1234, imagemagick_light, mediainfo, lynx, ueberzug
+, gawk, bat, atool, unzip, ffmpegthumbnailer, poppler_utils, odt2txt, gnupg
+, bluez, util-linux, self }:
 stdenvNoCC.mkDerivation {
   name = "scripts";
   src = self;
@@ -66,7 +34,7 @@ stdenvNoCC.mkDerivation {
             xdotool
             cpufrequtils
             timg
-            rofi-wayland
+            rofi
             jq
             file
             maim

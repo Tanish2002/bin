@@ -17,8 +17,7 @@
           inherit (self) overlays;
         });
 
-    in
-    {
+    in {
       overlays = [
         (final: prev: {
           unstable = unstable.legacyPackages.${final.system};
@@ -35,13 +34,8 @@
       ];
       packages = forAllSystems (system:
         let pkgs = nixpkgsFor.${system};
-        in
-        {
-          scripts = pkgs.callPackage self {
-            inherit self;
-            inherit (pkgs.unstable) yt-dlp-light imagemagick_light;
-            inherit (pkgs.nur.repos.kira-bruneau) rofi-wayland;
-          };
+        in {
+          scripts = pkgs.callPackage self { inherit self; };
           default = self.packages.${system}.scripts;
         });
       defaultPackage = forAllSystems (system: self.packages.${system}.scripts);
