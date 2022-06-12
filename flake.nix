@@ -42,6 +42,7 @@
             inherit (pkgs.unstable) yt-dlp-light imagemagick_light;
             inherit (pkgs.nur.repos.kira-bruneau) rofi-wayland;
           };
+          default = self.packages.${system}.scripts;
         });
       defaultPackage = forAllSystems (system: self.packages.${system}.scripts);
     };
