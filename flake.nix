@@ -7,13 +7,21 @@
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { self, nixpkgs, unstable, nur, ... }: {
+  outputs = { self, nixpkgs, unstable, nur, ... }:
+    let
+      supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
+      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+      nixpkgsFor = forAllSystems (system:
+        import nixpkgs {
+          inherit system;
+          inherit (self) overlays;
+        });
 
-    defaultPackage.x86_64-linux = with import nixpkgs {
-      system = "x86_64-linux";
+    in
+    {
       overlays = [
         (final: prev: {
-          unstable = unstable.legacyPackages.x86_64-linux;
+          unstable = unstable.legacyPackages.${final.system};
           colorpicker-ym1234 = prev.colorpicker.overrideAttrs (o: {
             src = prev.fetchFromGitHub {
               owner = "ym1234";
@@ -25,62 +33,16 @@
         })
         nur.overlay
       ];
+      packages = forAllSystems (system:
+        let pkgs = nixpkgsFor.${system};
+        in
+        {
+          scripts = pkgs.callPackage self {
+            inherit self;
+            inherit (pkgs.unstable) yt-dlp-light imagemagick_light;
+            inherit (pkgs.nur.repos.kira-bruneau) rofi-wayland;
+          };
+        });
+      defaultPackage = forAllSystems (system: self.packages.${system}.scripts);
     };
-      stdenv.mkDerivation {
-        name = "scripts";
-        src = self;
-
-        buildInputs = [ pkgs.makeWrapper ];
-        installPhase = ''
-          substituteInPlace scripts/matrix_upload \
-          --replace '#!/usr/bin/env -S python3 -u' '${pkgs.python3} -u'        
-
-          mkdir -p $out/bin
-          cp scripts/* $out/bin/
-          cp deps/* $out/bin
-        '';
-        postFixup = ''
-          for file in scripts/*
-          do
-            wrapProgram $out/bin/$(basename $file) \
-              --prefix PATH : ${
-                with pkgs;
-                lib.makeBinPath [
-                  coreutils
-                  curl
-                  pkgs.unstable.yt-dlp-light
-                  mpv
-                  netcat
-                  procps
-                  libnotify
-                  slop
-                  ffmpeg
-                  xdotool
-                  cpufrequtils
-                  timg
-                  pkgs.nur.repos.kira-bruneau.rofi-wayland
-                  jq
-                  file
-                  maim
-                  colorpicker-ym1234
-                  pkgs.unstable.imagemagick_light
-                  mediainfo
-                  lynx
-                  ueberzug
-                  gawk
-                  bat
-                  atool
-                  unzip
-                  ffmpegthumbnailer
-                  poppler_utils
-                  odt2txt
-                  gnupg
-                  bluez
-                  util-linux
-                ]
-              }
-          done
-        '';
-      };
-  };
 }
