@@ -2,12 +2,11 @@
   description = "A flake for installing these scripts";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
-    unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { self, nixpkgs, unstable, nur, ... }:
+  outputs = { self, nixpkgs, nur, ... }:
     let
       supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
@@ -20,7 +19,6 @@
     in {
       overlays = [
         (final: prev: {
-          unstable = unstable.legacyPackages.${final.system};
           colorpicker-ym1234 = prev.colorpicker.overrideAttrs (o: {
             src = prev.fetchFromGitHub {
               owner = "ym1234";
