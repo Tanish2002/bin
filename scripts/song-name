@@ -30,14 +30,15 @@ else
 	watch?v*)
 		# Get url
 		url="https://youtube.com/$res"
-		playing=$(yt-dlp -e "$url" 2>/dev/null)
+		playing=$(curl -sL "https://youtube.com/oembed?url=$url" | jq -r '.title')
 
 		# Check if it's already playing
 		[ "$current" = "$playing" ] && exit
 		# Print it and store it in playing
 		[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
 		# Send A nice notification with image
-		convert $(yt-dlp --get-thumbnail "https://www.youtube.com/$res") /tmp/image.png 2>/dev/null
+		rm -f /tmp/image.jpg
+		curl -L "https://img.youtube.com/vi/$(printf '%s' "$res" | tr -d 'watch?v=')/hqdefault.jpg" -o /tmp/image.jpg
 		notify-send -i "/tmp/image.png" "${playing}"
 		;;
 	esac
