@@ -38,7 +38,7 @@ else
 		[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
 		# Send A nice notification with image
 		rm -f /tmp/image.jpg
-		curl -sL "https://img.youtube.com/vi/$(printf '%s' "$res" | tr -d 'watch?v=')/hqdefault.jpg" -o /tmp/image.jpg
+		curl -sL "https://img.youtube.com/vi/$(printf '%s' "$res" | sed 's/watch?v=//g')/hqdefault.jpg" -o /tmp/image.jpg
 		notify-send -i "/tmp/image.jpg" "${playing}"
 		;;
 	esac
