@@ -1,0 +1,18 @@
+#!/bin/sh
+
+id=$(xinput | grep -i touchpad | awk '{print $6}' | sed 's/.*id=\([0-9]*\).*/\1/');
+status=$(xinput list-props $id | grep "Device Enabled" | awk '{print $4}');
+
+message=''
+if [ $status -eq 1 ];then
+	status=0
+	message="Disabled"
+else
+	status=1
+	message="Enabled"
+fi
+
+xinput set-prop $id "Device Enabled" $status
+dunstify -u critical -t 5000 "Trackpad" $message
+
+exit
