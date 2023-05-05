@@ -2,7 +2,7 @@
   description = "A flake for installing these scripts";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nur.url = "github:nix-community/NUR";
   };
 
@@ -18,8 +18,8 @@
 
     in {
       overlays = [
-        (final: prev: {
-          colorpicker-ym1234 = prev.colorpicker.overrideAttrs (o: {
+        (_: prev: {
+          colorpicker-ym1234 = prev.colorpicker.overrideAttrs (_: {
             src = prev.fetchFromGitHub {
               owner = "ym1234";
               repo = "colorpicker";
