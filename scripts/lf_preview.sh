@@ -22,6 +22,16 @@ ifub() {
 # be regenerated once seen.
 
 case "$(file --dereference --brief --mime-type -- "$1")" in
+*/svg*)
+	CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/lf/thumb.$(stat --printf '%n\0%i\0%F\0%s\0%W\0%Y' -- "$(readlink -f "$1")" | sha256sum | awk '{print $1}')"
+	[ ! -f "$CACHE.png" ] && gm convert "$1" "$CACHE.png"
+	image "$CACHE.png" "$2" "$3" "$4" "$5"
+	;;
+*/gif)
+	CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/lf/thumb.$(stat --printf '%n\0%i\0%F\0%s\0%W\0%Y' -- "$(readlink -f "$1")" | sha256sum | awk '{print $1}')"
+	[ ! -f "$CACHE.png" ] && gm convert "$1[0]" "$CACHE.png"
+	image "$CACHE.png" "$2" "$3" "$4" "$5"
+	;;
 image/*) image "$1" "$2" "$3" "$4" "$5" ;;
 text/html) lynx -width="$4" -display_charset=utf-8 -dump "$1" ;;
 text/troff) man ./ "$1" | col -b ;;

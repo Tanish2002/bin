@@ -2,7 +2,7 @@
 , libnotify, slop, ffmpeg, xdotool, cpufrequtils, timg, rofi, jq, file, maim
 , colorpicker-ym1234, imagemagick, mediainfo, lynx, ueberzug, gawk, bat, atool
 , unzip, ffmpegthumbnailer, poppler_utils, odt2txt, gnupg, bluez, util-linux
-, gnused, self }:
+, gnused, graphicsmagick, self }:
 stdenvNoCC.mkDerivation {
   name = "scripts";
   src = self;
@@ -31,6 +31,7 @@ stdenvNoCC.mkDerivation {
             libnotify
             slop
             ffmpeg
+            graphicsmagick
             xdotool
             cpufrequtils
             timg
