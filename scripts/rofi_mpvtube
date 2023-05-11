@@ -73,7 +73,7 @@ main() {
   notify-send "YouTube - Loading:" "$choice" -t 3000
 
   # Spawn mpv
-  mpv "$mpv_args" "$linktoplay"
+  mpv $mpv_args "$linktoplay"
 }
 
 main &
