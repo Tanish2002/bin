@@ -21,14 +21,10 @@
 # ~·~·~·~·~·~·~ User configuration ·~·~·~·~·~·~·~·
 # ~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·
 
-# Playlist file
+# Playlist file (playlist_file=/path/to/your/mpvtube_playlists)
 playlist_file=$HOME/.config/mpv/mpvtube_playlists
-# playlist_file=/path/to/your/mpvtube_playlists
 
 # Arguments that will be passed to mpv
-#mpv_args="-shuffle --ytdl-raw-options=yes-playlist= --border"
-
-# Use this if you only need audio
 mpv_args="--no-video -shuffle"
 
 # Rofi prompt
@@ -40,11 +36,20 @@ rofi_prompt="YouTube ❯"
 get_playlists() {
     while read -r LINE
     do
-        playlist_name="$(echo $LINE | cut -d "@" -f 1)"
-        echo $playlist_name
+        playlist_name="$(echo "${LINE}" | cut -d "@" -f 1)"
+        echo "$playlist_name"
     done < "$playlist_file"
+    echo "Search Youtube"
 }
-
+handle_youtube() {
+    type=$(printf '%s\n%s' 'Video Search' 'Playlist Search' \
+        | rofi -dmenu -lines 1 -i -fuzzy -p "Type ❯" )
+    if [[ $type == "Video Search" ]]; then
+        "$HOME"/bin/rofi_ytsearch -s
+    elif [[ $type == "Playlist Search" ]]; then
+        "$HOME"/bin/rofi_ytplaylistsearch -s
+    fi
+}
 main() {
     # Get choice from rofi
     choice=$( (get_playlists) | rofi -dmenu -lines 1 -i -fuzzy -p "$rofi_prompt" )
@@ -54,8 +59,11 @@ main() {
       exit 1
   fi
 
+  # Handle Youtube Search and Playback
+  [[ "$choice" == "Search Youtube" ]] && handle_youtube
+
   # Get URL
-  linktoplay="$(grep -m 1 "$choice" $playlist_file | cut -d '@' -f 2)"
+  linktoplay="$(grep -m 1 "$choice" "$playlist_file" | cut -d '@' -f 2)"
   # If the choice does not exist, exit
   if [ ${#linktoplay} -eq "0" ]; then
       exit 1
@@ -65,7 +73,7 @@ main() {
   notify-send "YouTube - Loading:" "$choice" -t 3000
 
   # Spawn mpv
-  mpv $mpv_args "$linktoplay"
+  mpv "$mpv_args" "$linktoplay"
 }
 
 main &

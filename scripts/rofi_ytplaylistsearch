@@ -5,31 +5,30 @@ YT_API_KEY="AIzaSyBb2ILxLmHvPwmTcvDga7lh60055Y-_FPI"
 MAX_RESULTS="20"
 SILENT=0
 { [ "$1" = "-s" ] || [ "$1" = "s" ]; } && SILENT=1
-QUERY=$(rofi -dmenu -p "Search Video ❯")
+
+QUERY=$(rofi -dmenu -p "Search Playlist ❯")
 
 if [ -z "${QUERY}" ]; then
     exit 1
 fi
-
 QUERY="$(printf '%s\n' "${QUERY}" | tr ' ' '+')"
-printf '%s\n' "${QUERY}"
+printf "%s\n" "${QUERY}"
 
-URLSTRING="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${QUERY}&type=video&maxResults=${MAX_RESULTS}&key=${YT_API_KEY}"
+URLSTRING="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${QUERY}&type=playlist&maxResults=${MAX_RESULTS}&key=${YT_API_KEY}"
 
 RESULT=$(curl -s "${URLSTRING}")
-CHOICE=$(printf '%s\n' "${RESULT}" | jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title)"'\
+CHOICE=$(printf '%s\n' "${RESULT}" | jq -r '.items[] | "\(.snippet.title)"'\
     | rofi -dmenu -columns 1 - -i -p 'Select Video -')
 
 if [ -z "${CHOICE}" ]; then
     exit 1
 fi
-
 LINK="https://$(printf '%s\n' "${RESULT}" \
-    | jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) => youtu.be/\(.id.videoId)"' \
+    | jq -r '.items[] | "\(.snippet.title) => youtube.com/playlist?list=\(.id.playlistId)"' \
     | grep "${CHOICE}" | rev \
     | cut -d" " -f1 | rev)"
 
 [ "${LINK}" = "https://" ] || {
     notify-send "YouTube - Loading:" "$CHOICE" -t 3000
-    { [ "$SILENT" -eq 1 ] && mpv --no-video "${LINK}"; } || mpv "${LINK}"
+    { [ "$SILENT" -eq 1 ] && mpv --no-video -shuffle "${LINK}"; } || mpv --shuffle "${LINK}"
 }
