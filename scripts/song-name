@@ -5,9 +5,9 @@
 # nicely display current song from mpvctl (also in bin)
 #
 
-artist=$($HOME/bin/mpvctl -k artist)
-title=$($HOME/bin/mpvctl -k title)
-filename=$($HOME/bin/mpvctl -k filename)
+artist=$("$HOME"/bin/mpvctl -k artist)
+title=$("$HOME"/bin/mpvctl -k title)
+filename=$("$HOME"/bin/mpvctl -k filename)
 
 [ -f /tmp/playing ] && touch /tmp/playing && current=$(tail -n1 /tmp/playing)
 
@@ -19,7 +19,7 @@ handle_youtube() {
 	# Check if it's already playing
 	[ "$current" = "$playing" ] && exit
 	# Print it and store it in playing
-	[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
+	[ "$playing" ] && printf '%s\n' "$playing" >>/tmp/playing && printf '%s\n' "$playing"
 	# Send A nice notification with image
 	rm -f /tmp/image.jpg
 	video_id=$(printf '%s' "$url" | sed 's/https:\/\/youtube.com\/watch?v=//g')
@@ -27,12 +27,16 @@ handle_youtube() {
 	notify-send -i "/tmp/image.jpg" "${playing}"
 }
 
-if [ "$artist" != null ] && [ "$title" != null ]; then
-	playing=$(printf '%s - %s\n' "$artist" "$title")
+if [ "$artist" != null ] || [ "$title" != null ]; then
+	if [ "$artist" != null ] && [ "$title" != null ]; then # If we have both artist and title info.
+		playing=$(printf '%s - %s\n' "$artist" "$title")
+	elif [ "$title" != null ]; then # If we only have the title
+		playing=$(printf '%s\n' "$title")
+	fi
 	# Check if it's already playing
 	[ "$current" = "$playing" ] && exit
 	# Print it and store it in playing
-	[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
+	[ "$playing" ] && printf '%s\n' "$playing" >>/tmp/playing && printf '%s\n' "$playing"
 else
 	res=$filename
 	case $res in
@@ -42,7 +46,7 @@ else
 		# Check if it's already playing
 		[ "$current" = "$playing" ] && exit
 		# Print it and store it in playing
-		[ "$playing" ] && printf '%s\n' "$playing" >> /tmp/playing && printf '%s\n' "$playing"
+		[ "$playing" ] && printf '%s\n' "$playing" >>/tmp/playing && printf '%s\n' "$playing"
 		;;
 		# ytdl is weird we sometimes get watch?v=video_id and just plain video_id sometimes (ig this could be a youtube problem, tho idk)
 	watch?v*)
@@ -50,13 +54,12 @@ else
 		url="https://youtube.com/$res"
 		handle_youtube "$url"
 		;;
-  *)
-  	# youtube watch codes are always 11 chars long
-    if [ ${#res} -eq 11 ] ; then
-    	 url="https://youtube.com/watch?v=$res"
-    	 handle_youtube "$url"
-    fi
-    ;;
+	*)
+		# youtube watch codes are always 11 chars long
+		if [ ${#res} -eq 11 ]; then
+			url="https://youtube.com/watch?v=$res"
+			handle_youtube "$url"
+		fi
+		;;
 	esac
 fi
-
