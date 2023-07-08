@@ -5,6 +5,9 @@
 # nicely display current song from mpvctl (also in bin)
 #
 
+# Exit if mpv isn't running
+mpvctl -i || exit
+
 artist=$("$HOME"/bin/mpvctl -k artist)
 title=$("$HOME"/bin/mpvctl -k title)
 filename=$("$HOME"/bin/mpvctl -k filename)
