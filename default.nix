@@ -1,13 +1,48 @@
-{ stdenvNoCC, python3, makeWrapper, lib, coreutils, curl, mpv, netcat, procps
-, libnotify, slop, ffmpeg, xdotool, cpufrequtils, timg, rofi, jq, file, maim
-, colorpicker-ym1234, imagemagick, mediainfo, lynx, ueberzug, gawk, bat, atool
-, unzip, ffmpegthumbnailer, poppler_utils, odt2txt, gnupg, bluez, util-linux
-, gnused, graphicsmagick, self }:
+{
+  stdenvNoCC,
+  python3,
+  makeWrapper,
+  lib,
+  coreutils,
+  curl,
+  mpv,
+  netcat,
+  procps,
+  libnotify,
+  slop,
+  ffmpeg,
+  xdotool,
+  cpufrequtils,
+  timg,
+  rofi,
+  jq,
+  file,
+  maim,
+  colorpicker-ym1234,
+  imagemagick,
+  mediainfo,
+  lynx,
+  ueberzug,
+  gawk,
+  bat,
+  atool,
+  unzip,
+  ffmpegthumbnailer,
+  poppler_utils,
+  pulseaudio,
+  odt2txt,
+  gnupg,
+  bluez,
+  util-linux,
+  gnused,
+  graphicsmagick,
+  self,
+}:
 stdenvNoCC.mkDerivation {
   name = "scripts";
   src = self;
 
-  buildInputs = [ makeWrapper ];
+  buildInputs = [makeWrapper];
   installPhase = ''
     substituteInPlace scripts/matrix_upload \
     --replace '#!/usr/bin/env -S python3 -u' '${python3} -u'
@@ -21,41 +56,43 @@ stdenvNoCC.mkDerivation {
     do
       wrapProgram $out/bin/$(basename $file) \
         --prefix PATH : ${
-          lib.makeBinPath [
-            coreutils
-            gnused
-            curl
-            mpv
-            netcat
-            procps
-            libnotify
-            slop
-            ffmpeg
-            graphicsmagick
-            xdotool
-            cpufrequtils
-            timg
-            rofi
-            jq
-            file
-            maim
-            colorpicker-ym1234
-            imagemagick
-            mediainfo
-            lynx
-            ueberzug
-            gawk
-            bat
-            atool
-            unzip
-            ffmpegthumbnailer
-            poppler_utils
-            odt2txt
-            gnupg
-            bluez
-            util-linux
-          ]
-        }
+      lib.makeBinPath [
+        "$out" # so scripts can access each other
+        coreutils
+        gnused
+        curl
+        mpv
+        netcat
+        procps
+        libnotify
+        slop
+        ffmpeg
+        graphicsmagick
+        xdotool
+        cpufrequtils
+        timg
+        rofi
+        jq
+        file
+        maim
+        colorpicker-ym1234
+        imagemagick
+        mediainfo
+        lynx
+        ueberzug
+        gawk
+        bat
+        atool
+        unzip
+        ffmpegthumbnailer
+        poppler_utils
+        odt2txt
+        gnupg
+        bluez
+        util-linux
+        pulseaudio
+      ]
+    }
     done
   '';
 }

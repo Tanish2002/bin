@@ -1,0 +1,20 @@
+#!/bin/sh
+# Set Volume for application
+# Usage: appvol <app-name> <percentage>
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: appvol <app-name> <percentage>"
+	exit 1
+fi
+
+PLAYER="$1"
+VOLUME="$2"
+
+# Find the first player's sink index
+firstPlayerSinkIndex=$(pacmd list-sink-inputs | awk '/index:|application.name |application.process.binary / {print $0};' | grep -iB 1 "$PLAYER" | awk '/index:/ {print $2; exit}')
+
+if [ -n "$firstPlayerSinkIndex" ]; then
+	pacmd set-sink-input-volume "$firstPlayerSinkIndex" "$((VOLUME * 65536 / 100))"
+else
+	echo "Application '$PLAYER' not found."
+fi
