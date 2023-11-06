@@ -2,19 +2,38 @@
 # Set Volume for application
 # Usage: appvol <app-name> <percentage>
 
-if [ "$#" -ne 2 ]; then
-	echo "Usage: appvol <app-name> <percentage>"
+if [ "$#" -lt 2 ]; then
+	echo "Usage:"
+	echo "appvol <app-name> <percentage>"
+	echo "appvol <app-name> <inc/dec> <percentage:default-5%>"
 	exit 1
 fi
 
 PLAYER="$1"
 VOLUME="$2"
+VOLUME_CHANGE=${3:-5} # default 5%
 
-# Find the first player's sink index
-firstPlayerSinkIndex=$(pacmd list-sink-inputs | awk '/index:|application.name |application.process.binary / {print $0};' | grep -iB 1 "$PLAYER" | awk '/index:/ {print $2; exit}')
+# Find the first player's sink index and volume
+sink_info=$(pacmd list-sink-inputs | awk '/index:|volume:|application.name |application.process.binary / {print $0};' | grep -iB 2 "$PLAYER")
+firstPlayerSinkIndex=$(echo "$sink_info" | awk '/index:/ {print $2; exit}')
+firstPlayerSinkVolume=$(echo "$sink_info" | awk -F '/' '/volume:/ {print $2}' | tr -d ' %')
 
 if [ -n "$firstPlayerSinkIndex" ]; then
-	pacmd set-sink-input-volume "$firstPlayerSinkIndex" "$((VOLUME * 65536 / 100))"
+	if [ "$VOLUME" = "inc" ]; then
+		newVolume=$((firstPlayerSinkVolume + VOLUME_CHANGE))
+	elif [ "$VOLUME" = "dec" ]; then
+		newVolume=$((firstPlayerSinkVolume - VOLUME_CHANGE))
+	else
+		newVolume="$VOLUME"
+	fi
+
+	# Ensure the volume does not exceed 150%
+	if [ "$newVolume" -gt 150 ]; then
+		newVolume=150
+	fi
+
+	pacmd set-sink-input-volume "$firstPlayerSinkIndex" "$((newVolume * 65536 / 100))"
+	echo "${PLAYER} volume set to ${newVolume}%"
 else
 	echo "Application '$PLAYER' not found."
 fi
