@@ -32,6 +32,7 @@
   pulseaudio,
   odt2txt,
   gnupg,
+  bc,
   bluez,
   util-linux,
   gnused,
@@ -82,6 +83,7 @@ stdenvNoCC.mkDerivation {
         ueberzug
         gawk
         bat
+        bc
         atool
         unzip
         ffmpegthumbnailer
