@@ -21,9 +21,8 @@
   colorpicker-ym1234,
   imagemagick,
   mediainfo,
-  lynx,
-  ueberzug,
   gawk,
+  chafa,
   bat,
   atool,
   unzip,
@@ -78,9 +77,8 @@ stdenvNoCC.mkDerivation {
         maim
         colorpicker-ym1234
         imagemagick
+        chafa
         mediainfo
-        lynx
-        ueberzug
         gawk
         bat
         bc
