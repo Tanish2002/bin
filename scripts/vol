@@ -1,11 +1,100 @@
-get_vol() {
-    speakers=$(amixer sget Master | grep '\[on\]' 2>/dev/null)
-    getvol=$(amixer sget Master)
-    getvol=${getvol%%\%*}
-    getvol=${getvol##*\[}
-    [ "${speakers}" ] && echo '🔊 ' ${getvol}% || echo '  muted' 
+#!/bin/sh
 
+# Default step value
+DEFAULT_STEP=5
+MAX_VOLUME=150
+
+# Function to get the active sink index
+get_active_sink() {
+    pacmd list-sinks | grep -A 15 '* index' | grep index | awk '{print $3}'
 }
-printf '%s' "$(get_vol)"
 
+# Function to get the current volume
+get_volume() {
+    pacmd list-sinks | grep -A 15 '* index' | awk '/volume: front/{ print $5 }' | sed 's/[%|,]//g'
+}
 
+# Function to check if the sink is muted
+is_muted() {
+    muted=$(pacmd list-sinks | grep -A 15 '* index' | awk '/muted:/{ print $2 }')
+    if [ "$muted" = "yes" ]; then
+        echo "muted"
+    else
+        echo "unmuted"
+    fi
+}
+
+# Function to increase the volume
+increase_volume() {
+    sink=$(get_active_sink)
+    step=${1:-$DEFAULT_STEP}
+    current_volume=$(get_volume)
+    new_volume=$((current_volume + step))
+    if [ "$new_volume" -gt "$MAX_VOLUME" ]; then
+        new_volume=$MAX_VOLUME
+    fi
+    pactl set-sink-volume "$sink" "${new_volume}%"
+}
+
+# Function to decrease the volume
+decrease_volume() {
+    sink=$(get_active_sink)
+    step=${1:-$DEFAULT_STEP}
+    pactl set-sink-volume "$sink" "-${step}%"
+}
+
+# Function to set the volume
+set_volume() {
+    sink=$(get_active_sink)
+    value=$1
+    if [ "$value" -gt "$MAX_VOLUME" ]; then
+        value=$MAX_VOLUME
+    fi
+    pactl set-sink-volume "$sink" "${value}%"
+}
+
+# Function to toggle mute/unmute
+toggle_mute() {
+    sink=$(get_active_sink)
+    pactl set-sink-mute "$sink" toggle
+}
+
+# Function to output the volume or mute status
+output_volume() {
+    if [ "$(is_muted)" = "muted" ]; then
+        echo "muted"
+    else
+        get_volume
+    fi
+}
+
+# Main script logic
+case "$1" in
+    up)
+        increase_volume "$2"
+        output_volume
+        ;;
+    down)
+        decrease_volume "$2"
+        output_volume
+        ;;
+    set)
+        if [ -z "$2" ]; then
+            echo "Please provide a volume value to set."
+            exit 1
+        fi
+        set_volume "$2"
+        output_volume
+        ;;
+    toggle)
+        toggle_mute
+        output_volume
+        ;;
+    get)
+        output_volume
+        ;;
+    *)
+        echo "Usage: $0 {up <step>|down <step>|set <value>|toggle|get}"
+        exit 1
+        ;;
+esac
