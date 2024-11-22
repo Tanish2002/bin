@@ -11,29 +11,74 @@ fi
 
 PLAYER="$1"
 VOLUME="$2"
-VOLUME_CHANGE=${3:-5} # default 5%
+VOLUME_CHANGE=${3:-5} # Default 5%
 
-# Find the first player's sink index and volume
-sink_info=$(pacmd list-sink-inputs | awk '/index:|volume:|application.name |application.process.binary / {print $0};' | grep -iB 2 "$PLAYER")
-firstPlayerSinkIndex=$(echo "$sink_info" | awk '/index:/ {print $2; exit}')
-firstPlayerSinkVolume=$(echo "$sink_info" | awk -F '/' '/volume:/ {print $2}' | tr -d ' %')
+# Detect audio system
+if command -v wpctl >/dev/null 2>&1; then
+	AUDIO_SYSTEM="pipewire"
+elif command -v pactl >/dev/null 2>&1; then
+	AUDIO_SYSTEM="pulseaudio"
+else
+	echo "No supported audio system detected (PipeWire or PulseAudio)."
+	exit 1
+fi
 
-if [ -n "$firstPlayerSinkIndex" ]; then
-	if [ "$VOLUME" = "inc" ]; then
-		newVolume=$((firstPlayerSinkVolume + VOLUME_CHANGE))
-	elif [ "$VOLUME" = "dec" ]; then
-		newVolume=$((firstPlayerSinkVolume - VOLUME_CHANGE))
+# Function to calculate the new volume
+calculate_new_volume() {
+	current_volume=$1
+	action=$2
+	change=$3
+
+	if [ "$action" = "inc" ]; then
+		target_volume=$((current_volume + change))
+	elif [ "$action" = "dec" ]; then
+		target_volume=$((current_volume - change))
 	else
-		newVolume="$VOLUME"
+		target_volume=$action
 	fi
 
 	# Ensure the volume does not exceed 150%
-	if [ "$newVolume" -gt 150 ]; then
-		newVolume=150
+	if [ "$target_volume" -gt 150 ]; then
+		target_volume=150
 	fi
+	echo "$target_volume"
+}
 
-	pacmd set-sink-input-volume "$firstPlayerSinkIndex" "$((newVolume * 65536 / 100))"
-	echo "${PLAYER} volume set to ${newVolume}%"
+# Function to set the volume based on the audio system
+set_volume() {
+	target_volume=$1
+	if [ "$AUDIO_SYSTEM" = "pipewire" ]; then
+		wpctl set-volume "$NODE_ID" "${target_volume}%"
+	else
+		pactl set-sink-input-volume "$SINK_INDEX" "$((target_volume * 65536 / 100))"
+	fi
+	echo "${PLAYER} volume set to ${target_volume}%"
+}
+
+# Get current volume and application identifier
+if [ "$AUDIO_SYSTEM" = "pipewire" ]; then
+	NODE_ID=$(wpctl status | awk -v player="$PLAYER" '
+    BEGIN {found=0}
+    /Streams:/ {found=1} 
+    found && $0 ~ player {print $1; exit}
+' | tr -d '.')
+	if [ -n "$NODE_ID" ]; then
+		current_volume=$(wpctl get-volume "$NODE_ID" | awk '{print $2 * 100}' | cut -d. -f1)
+	else
+		echo "Application '$PLAYER' not found."
+		exit 1
+	fi
 else
-	echo "Application '$PLAYER' not found."
+	SINK_INFO=$(pacmd list-sink-inputs | awk '/index:|volume:|application.name |application.process.binary / {print $0};' | grep -iB 2 "$PLAYER")
+	SINK_INDEX=$(echo "$SINK_INFO" | awk '/index:/ {print $2; exit}')
+	if [ -n "$SINK_INDEX" ]; then
+		current_volume=$(echo "$SINK_INFO" | awk -F '/' '/volume:/ {print $2}' | tr -d ' %')
+	else
+		echo "Application '$PLAYER' not found."
+		exit 1
+	fi
 fi
+
+# Calculate and set the new volume
+new_volume=$(calculate_new_volume "$current_volume" "$VOLUME" "$VOLUME_CHANGE")
+set_volume "$new_volume"
