@@ -31,52 +31,61 @@ mpv_args="--no-video -shuffle"
 rofi_prompt="YouTube ❯"
 # ~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·
 
-
 # Grab the playlist names from the file
 get_playlists() {
-    while read -r LINE
-    do
-        playlist_name="$(echo "${LINE}" | cut -d "@" -f 1)"
-        echo "$playlist_name"
-    done < "$playlist_file"
-    echo "Search Youtube"
+	while read -r LINE; do
+		playlist_name="$(echo "${LINE}" | cut -d "@" -f 1)"
+		echo "$playlist_name"
+	done <"$playlist_file"
+	echo "Search Youtube"
 }
 handle_youtube() {
-    type=$(printf '%s\n%s' 'Video Search' 'Playlist Search' \
-        | rofi -dmenu -lines 1 -i -fuzzy -p "Type ❯" )
-    if [[ $type == "Video Search" ]]; then
-        "$HOME"/bin/rofi_ytsearch -s
-    elif [[ $type == "Playlist Search" ]]; then
-        "$HOME"/bin/rofi_ytplaylistsearch -s
-    fi
+	type=$(printf '%s\n%s' 'Video Search' 'Playlist Search' |
+		rofi -dmenu -lines 1 -i -fuzzy -p "Type ❯")
+
+	if [[ -n $type ]]; then
+		bg_play=$(printf '%s\n%s' 'Yes' 'No' |
+			rofi -dmenu -lines 1 -i -fuzzy -p "Play in background? ❯")
+
+		if [[ $bg_play == "Yes" ]]; then
+			option="-s"
+		else
+			option=""
+		fi
+
+		if [[ $type == "Video Search" ]]; then
+			"$HOME"/bin/rofi_ytsearch $option
+		elif [[ $type == "Playlist Search" ]]; then
+			"$HOME"/bin/rofi_ytplaylistsearch $option
+		fi
+	fi
 }
 main() {
-    # Get choice from rofi
-    choice=$( (get_playlists) | rofi -dmenu -lines 1 -i -fuzzy -p "$rofi_prompt" )
+	# Get choice from rofi
+	choice=$( (get_playlists) | rofi -dmenu -lines 1 -i -fuzzy -p "$rofi_prompt")
 
-  # If user has not picked anything, exit
-  if [[ -z "${choice// }" ]]; then
-      exit 1
-  fi
+	# If user has not picked anything, exit
+	if [[ -z "${choice// /}" ]]; then
+		exit 1
+	fi
 
-  # Handle Youtube Search and Playback
-  [[ "$choice" == "Search Youtube" ]] && handle_youtube
+	# Handle Youtube Search and Playback
+	[[ "$choice" == "Search Youtube" ]] && handle_youtube
 
-  # Get URL
-  linktoplay="$(grep -m 1 "$choice" "$playlist_file" | cut -d '@' -f 2)"
-  # If the choice does not exist, exit
-  if [ ${#linktoplay} -eq "0" ]; then
-      exit 1
-  fi
+	# Get URL
+	linktoplay="$(grep -m 1 "$choice" "$playlist_file" | cut -d '@' -f 2)"
+	# If the choice does not exist, exit
+	if [ ${#linktoplay} -eq "0" ]; then
+		exit 1
+	fi
 
-  # Send notification
-  notify-send "YouTube - Loading:" "$choice" -t 3000
+	# Send notification
+	notify-send "YouTube - Loading:" "$choice" -t 3000
 
-  # Spawn mpv
-  mpv $mpv_args "$linktoplay"
+	# Spawn mpv
+	mpv $mpv_args "$linktoplay"
 }
 
 main &
 
 exit 0
-
