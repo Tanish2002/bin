@@ -1,9 +1,14 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-while read -r line; do
-    IFS=', ' read -r r g b hex <<< $line
+# Run the xcolor command and capture the output
+output=$(xcolor -c "#%{02Hr}%{02Hg}%{02Hb} %{r} %{g} %{b}")
 
-    printf '%s\n\e[48;2;%s;%s;%sm       \e[m\n' \
-        "$hex" "$r" "$g" "$b"
-done < <(stdbuf -oL colorpicker)
-        echo $hex | xclip -sel clip
+# Parse the output to extract hex color and RGB values
+hex=$(echo $output | awk '{print $1}')
+r=$(echo $output | awk '{print $2}')
+g=$(echo $output | awk '{print $3}')
+b=$(echo $output | awk '{print $4}')
+
+# Print the formatted output
+printf '%s\n\e[48;2;%s;%s;%sm       \e[m\n' $hex $r $g $b
+printf '%s' $hex | xclip -sel copy
