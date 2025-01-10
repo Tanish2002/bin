@@ -35,6 +35,7 @@
 , util-linux
 , gnused
 , graphicsmagick
+, glow
 , self
 ,
 }:
@@ -91,6 +92,7 @@ stdenvNoCC.mkDerivation {
         bluez
         util-linux
         pulseaudio
+        glow
       ]
     }
     done
